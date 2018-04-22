@@ -15,6 +15,20 @@ class SeoTable extends Main\Entity\DataManager
      */
     public static function getTableName()
     {
-        return 'b_seo';
+        return 'b_powernic_seo';
+    }
+
+    /**
+     * Returns entity map definition.
+     *
+     * @return array
+     */
+    public static function getMap()
+    {
+        return array(
+            'KEY' => new Main\Entity\StringField('KEY',array(
+                'primary' => true)),
+            'VALUE' => new Main\Entity\StringField('VALUE'),
+        );
     }
 }

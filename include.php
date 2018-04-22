@@ -6,14 +6,14 @@ global $DB, $APPLICATION, $MESS, $DBType;
 IncludeModuleLangFile(__FILE__);
 
 Loader::registerAutoLoadClasses(
-    'seo',
+    'powernic.seo',
     array(
         '\Bitrix\Seo\SeoManager' => 'lib/seomanager.php',
         '\Bitrix\Seo\SeoTable' => 'lib/seo.php',
     )
 );
 
-define('SEO_CACHE_DEFAULT_TIME', 10800);
+define('SEO_CACHE_DEFAULT_TIME', 0);
 
 class CPowernicSeoEventHandlers
 {
@@ -87,5 +87,11 @@ class CPowernicSeoEventHandlers
             ),
         ));
     }
+
+    function SeoOnProlog(){
+        /* TODO: Добавляем заголовки по умолчанию*/
+       return false;
+    }
 }
+AddEventHandler('form', 'OnProlog', array('CPowernicSeoEventHandlers', 'SeoOnProlog'));
 ?>

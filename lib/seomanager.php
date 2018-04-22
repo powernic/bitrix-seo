@@ -39,9 +39,7 @@ class SeoManager
         else
         {
             $paramsList = array();
-            $seoIterator = SeoTable::getList(array(
-                'select' => array('KEY', 'VALUE'),
-            ));
+            $seoIterator = SeoTable::getList(array('select' => array('*')));
             while ($param = $seoIterator->fetch())
             {
                 $paramsList[$param['KEY']] = $param['VALUE'];
@@ -50,6 +48,18 @@ class SeoManager
             $managedCache->set($cacheId, $paramsList);
         }
         return $paramsList;
+    }
+    /**
+     * Update current params.
+     *
+     * @param string $updateParams	 Update currency id.
+     * @return void
+     * @throws Main\ArgumentException
+     * @throws \Exception
+     */
+    public static function updateParam($param = '', $value = '')
+    {
+        $updateResult = SeoTable::update($param, array('VALUE' => $value));
     }
 
 }
