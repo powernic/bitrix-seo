@@ -38,14 +38,11 @@ Class powernic_seo extends CModule
             CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/powernic.seo/install/admin", $_SERVER["DOCUMENT_ROOT"]."/bitrix/admin", true, true);
         }
         return true;
-        /*CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/powernic_seo/install/components",
-            $_SERVER["DOCUMENT_ROOT"]."/bitrix/components", true, true);*/
     }
 
     function UnInstallFiles()
     {
         DeleteDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/powernic.seo/install/admin/", $_SERVER["DOCUMENT_ROOT"]."/bitrix/admin");
-        //DeleteDirFilesEx("/bitrix/components/powernic_seo");
         return true;
     }
     function InstallDB()
@@ -58,7 +55,8 @@ Class powernic_seo extends CModule
 
         $eventManager = \Bitrix\Main\EventManager::getInstance();
 
-        $eventManager->registerEventHandler('main', 'OnPanelCreate', 'powernic.seo', 'CPowernicSeoEventHandlers', 'SeoOnPanelCreate');
+        $eventManager->registerEventHandler('main', 'OnPanelCreate', $this->MODULE_ID, 'CPowernicSeoEventHandlers', 'SeoOnPanelCreate');
+        $eventManager->registerEventHandler('main', 'OnEpilog', $this->MODULE_ID, 'CPowernicSeoEventHandlers', 'SeoOnEpilog');
 
         if (!$DB->Query("SELECT COUNT(*) FROM b_powernic_seo", true)):
             $this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/powernic.seo/install/db/".strtolower($DB->type)."/install.sql");

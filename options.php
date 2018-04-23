@@ -11,11 +11,8 @@ if (!$USER->CanDoOperation('powernic_seo_settings')) {
     $APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 }
 
-$seoRight = $APPLICATION->GetGroupRight($module_id);
-if ($seoRight >= "R") {
-    CModule::IncludeModule('powernic.seo');
-}
-if ($seoRight >= "R") {
+$moduleAccessLevel = $APPLICATION->GetGroupRight($module_id);
+if ($moduleAccessLevel >= "R") {
     CModule::IncludeModule('powernic.seo');
     IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"] . BX_ROOT . "/modules/main/options.php");
     IncludeModuleLangFile(__FILE__);
@@ -25,10 +22,35 @@ if ($seoRight >= "R") {
     );
     $tabControl = new CAdminTabControl("seoTabControl", $aTabs, true, true);
     /* processed POST or GET queries*/
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && $moduleAccessLevel == "W" && check_bitrix_sessid()) {
+        if (isset($_POST['Update']) && $_POST['Update'] === 'Y') {
+            $listParam = array('og:locale', 'og:type', 'twitter:card', 'og:site_name');
+            foreach ($listParam as $param) {
+                if (isset($_POST[$param])) {
+                    Seo\SeoManager::updateParam($param, (string)$_POST[$param]);
+                }
+            }
+            LocalRedirect($APPLICATION->GetCurPage() . '?lang=' . LANGUAGE_ID . '&mid=' . $module_id . '&' . $tabControl->ActiveTabParam());
+        }
+    }
     ?>
     <?
     $paramList = Seo\SeoManager::getParamsList();
-    print_r($paramList);
+    $params = array('og:locale' => array('ru_RU', 'en_EN'),
+        'og:type' => array('article', 'website', 'object'),
+        'twitter:card' => array('summary_large_image', 'summary'));
+    function selectHtml($params, $paramName, $value)
+    {
+        if (!isset($params[$paramName])) {
+            return false;
+        }
+        echo '<select name="' . $paramName . '">';
+        foreach ($params[$paramName] as $variable) {
+            echo '<option ' . ($variable == $value ? 'selected="selected"' : "") . ' value="' . $variable . '">' . $variable . '</option>';
+        }
+        echo "</select>";
+    }
+
     ?>
     <h2>Значения по умолчанию</h2>
     <?php
@@ -40,33 +62,30 @@ if ($seoRight >= "R") {
         $tabControl->BeginNextTab(); ?>
         <tr>
             <td width="40%">Locale</td>
-            <td width="60%"><select name="og:locale">
-                    <option value="ru_RU">ru_RU</option>
-                    <option value="en_EN">en_EN</option>
-                </select></td>
+            <td width="60%"><?
+                selectHtml($params, "og:locale", $paramList['og:locale']) ?>
         </tr>
         <tr>
             <td width="40%">Type</td>
-            <td width="60%"><select name="og:type">
-                    <option value="article">article</option>
-                    <option value="website">website</option>
-                    <option value="object">object</option>
-                </select></td>
+            <td width="60%"><?
+                selectHtml($params, "og:type", $paramList['og:type']) ?>
         </tr>
         <tr>
             <td width="40%">Site Name</td>
-            <td width="60%"><input type="text" name="og:site_name"></td>
+            <td width="60%"><input type="text" name="og:site_name" value="<?=$paramList['og:site_name']?>"></td>
         </tr>
         <?php
         $tabControl->BeginNextTab(); ?>
         <tr>
             <td width="40%">Card</td>
-            <td width="60%"><select name="twitter:card">
-                    <option value="summary_large_image">summary_large_image</option>
-                    <option value="summary">summary</option>
-                </select></td>
+            <td width="60%"><?
+                selectHtml($params, "twitter:card", $paramList['twitter:card']) ?>
         </tr>
         <?php $tabControl->Buttons(); ?>
+        <input type="submit"<?= ($moduleAccessLevel < 'W' ? ' disabled' : ''); ?> name="Update"
+               value="<?= Loc::getMessage('SEO_OPTIONS_BTN_SAVE') ?>" class="adm-btn-save"
+               title="<?= Loc::getMessage('SEO_OPTIONS_BTN_SAVE_TITLE'); ?>">
+        <input type="hidden" name="Update" value="Y">
     </form>
     <?php
     $tabControl->End();

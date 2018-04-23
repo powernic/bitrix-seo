@@ -52,28 +52,6 @@ function SeoShowHelp($topic)
     return $msg;
 }
 
-function SetPrologMeta($prolog, $meta_key)
-{
-    if(preg_match("'(\\\$APPLICATION->showMeta\\(\"".preg_quote(EscapePHPString($meta_key), "'")."\")(\\);[\r\n]*)'i", $prolog, $regs)
-        || preg_match("'(\\\$APPLICATION->showMeta\\(\\'".preg_quote(EscapePHPString($meta_key, "'"), "'")."\\')(\\);[\r\n]*)'i", $prolog, $regs))
-    {
-        $prolog = str_replace($regs[1].$regs[2].$regs[3], "", $prolog);
-    }
-    {
-            $p = strpos($prolog, "prolog_before");
-            if($p===false)
-                $p = strpos($prolog, "prolog.php");
-            if($p===false)
-                $p = strpos($prolog, "header.php");
-            if($p!==false)
-            {
-                $p = strpos(substr($prolog, $p), ")") + $p;
-                $prolog = substr($prolog, 0, $p+1).";\n\$APPLICATION->showMeta(\"".EscapePHPString($meta_key)."\")".substr($prolog, $p+1);
-            }
-    }
-    return $prolog;
-}
-
 if (!isset($_REQUEST["lang"]) || strlen($_REQUEST["lang"]) <= 0)
     $lang = LANGUAGE_ID;
 
@@ -89,19 +67,12 @@ if (!check_bitrix_sessid()) {
     if (!$bReadOnly) {
         //Properties
         if (isset($_POST["PROPERTY"]) && is_array($_POST["PROPERTY"])) {
-            //Устанавливаем свойства по умолчанию
-            $defaultMeta = array( array( 'CODE' => 'og:locale', 'VALUE' => 'ru_RU'),
-                array( 'CODE' => 'type', 'VALUE' => 'article'),
-                array( 'CODE' => 'site_name', 'VALUE' => 'ODesign'),
-                array( 'CODE' => 'twitter:card', 'VALUE' => 'summary_large_image'));
-            $_POST["PROPERTY"] = array_merge($defaultMeta,$_POST["PROPERTY"]);
             foreach ($_POST["PROPERTY"] as $arProperty) {
                 $arProperty["CODE"] = (isset($arProperty["CODE"]) ? trim($arProperty["CODE"]) : "");
                 $arProperty["VALUE"] = (isset($arProperty["VALUE"]) ? trim($arProperty["VALUE"]) : "");
 
                 if (preg_match("/[a-zA-Z_-~]+/i", $arProperty["CODE"])) {
                     $fileContent = SetPrologProperty($fileContent, $arProperty["CODE"], $arProperty["VALUE"]);
-                    $fileContent = SetPrologMeta($fileContent, $arProperty["CODE"]);
                 }
             }
         }
