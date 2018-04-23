@@ -80,8 +80,17 @@ Class powernic_seo extends CModule
 
     function DoUninstall()
     {
-        global $DOCUMENT_ROOT, $APPLICATION;
+        global $DB, $DOCUMENT_ROOT, $APPLICATION;
         $this->UnInstallFiles();
+        if ($DB->Query("SELECT COUNT(*) FROM b_powernic_seo", true)):
+            $this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/powernic.seo/install/db/".strtolower($DB->type)."/uninstall.sql");
+        endif;
+
+        if ($this->errors !== false)
+        {
+            $APPLICATION->ThrowException(implode("", $this->errors));
+            return false;
+        }
         UnRegisterModule("powernic.seo");
         $APPLICATION->IncludeAdminFile("Деинсталляция модуля powernic_seo", $DOCUMENT_ROOT."/bitrix/modules/powernic_seo/install/unstep.php");
     }
