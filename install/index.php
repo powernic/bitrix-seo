@@ -57,6 +57,7 @@ Class powernic_seo extends CModule
 
         $eventManager->registerEventHandler('main', 'OnPanelCreate', $this->MODULE_ID, 'CPowernicSeoEventHandlers', 'SeoOnPanelCreate');
         $eventManager->registerEventHandler('main', 'OnEpilog', $this->MODULE_ID, 'CPowernicSeoEventHandlers', 'SeoOnEpilog');
+        $eventManager->registerEventHandler('main', 'OnEndBufferContent', $this->MODULE_ID, 'CPowernicSeoEventHandlers', 'SeoOnEndBufferContent');
 
         if (!$DB->Query("SELECT COUNT(*) FROM b_powernic_seo", true)):
             $this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/powernic.seo/install/db/".strtolower($DB->type)."/install.sql");

@@ -19,12 +19,14 @@ if ($moduleAccessLevel >= "R") {
     $aTabs = array(
         array("DIV" => "edit0", "TAB" => "OpenGraph", "ICON" => "currency_settings", "TITLE" => "Настройки"),
         array("DIV" => "edit1", "TAB" => "TwitterCard", "ICON" => "currency_settings", "TITLE" => "Настройки"),
+        array("DIV" => "edit2", "TAB" => "Дополнительно", "ICON" => "currency_settings", "TITLE" => "Настройки"),
     );
     $tabControl = new CAdminTabControl("seoTabControl", $aTabs, true, true);
     /* processed POST or GET queries*/
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && $moduleAccessLevel == "W" && check_bitrix_sessid()) {
         if (isset($_POST['Update']) && $_POST['Update'] === 'Y') {
-            $listParam = array('og:locale', 'og:type', 'twitter:card', 'og:site_name');
+            $listParam = array('og:locale', 'og:type', 'twitter:card', 'og:site_name', 'og:image',
+                'business','metrica');
             foreach ($listParam as $param) {
                 if (isset($_POST[$param])) {
                     Seo\SeoManager::updateParam($param, (string)$_POST[$param]);
@@ -74,12 +76,26 @@ if ($moduleAccessLevel >= "R") {
             <td width="40%">Site Name</td>
             <td width="60%"><input type="text" name="og:site_name" value="<?=$paramList['og:site_name']?>"></td>
         </tr>
+        <tr>
+            <td width="40%">Image</td>
+            <td width="60%"><input type="text" name="og:image" value="<?=$paramList['og:image']?>"></td>
+        </tr>
         <?php
         $tabControl->BeginNextTab(); ?>
         <tr>
             <td width="40%">Card</td>
             <td width="60%"><?
                 selectHtml($params, "twitter:card", $paramList['twitter:card']) ?>
+        </tr>
+        <?php
+        $tabControl->BeginNextTab(); ?>
+        <tr>
+            <td width="40%">Сквозная микроразметка организации</td>
+            <td width="60%"><textarea name="business" cols="50" rows="10"><?=$paramList['business']?></textarea>
+        </tr>
+        <tr>
+            <td width="40%">Скрипты метрики</td>
+            <td width="60%"><textarea name="metrica" cols="50" rows="10"><?=$paramList['metrica']?></textarea>
         </tr>
         <?php $tabControl->Buttons(); ?>
         <input type="submit"<?= ($moduleAccessLevel < 'W' ? ' disabled' : ''); ?> name="Update"

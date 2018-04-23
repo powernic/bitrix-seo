@@ -96,6 +96,7 @@ $arFilemanProperties = Array(
     'twitter:description' => GetMessage("POWERNIC_SEO_PROPS_TC_DESCRIPTION"),
     'twitter:title' => GetMessage("POWERNIC_SEO_PROPS_TC_TITLE"),
     'twitter:image' => GetMessage("POWERNIC_SEO_PROPS_TC_IMAGE"),
+    'canonical' => GetMessage("POWERNIC_SEO_PROPS_CANONICAL"),
 );
 //Properties from page
 $arPageSlice = ParseFileContent($fileContent);
@@ -137,6 +138,7 @@ $back_url = CSeoUtils::CleanURL($back_url);
 $aTabs = array(
     array("DIV" => "seo_edit1", "TAB" => 'OpenGraph', "ICON" => "main_settings", "TITLE" => 'OpenGraph'),
     array("DIV" => "seo_edit2", "TAB" => 'TwitterCard', "ICON" => "main_settings", "TITLE" => 'TwitterCard'),
+    array("DIV" => "seo_edit3", "TAB" => 'Общее', "ICON" => "main_settings", "TITLE" => 'Общее'),
 );
 $tabControl = new CAdminTabControl("seoTabControl", $aTabs, true, true);
 
@@ -204,6 +206,44 @@ require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_a
             if ($prop_code = COption::GetOptionString('powernic.seo', 'property_og_title', 'twitter:description')) $arEditProperties['twitter:description'] = HtmlFilter::encode($prop_code);
             if ($prop_code = COption::GetOptionString('powernic.seo', 'property_og_title', 'twitter:title')) $arEditProperties['twitter:title'] = HtmlFilter::encode($prop_code);
             if ($prop_code = COption::GetOptionString('powernic.seo', 'property_og_title', 'twitter:image')) $arEditProperties['twitter:image'] = HtmlFilter::encode($prop_code);
+            foreach ($arEditProperties as $key => $prop_code):
+                $value = $arGlobalProperties[$prop_code];
+                ?>
+                <tr>
+                    <td><?echo $arFilemanProperties[$prop_code]?></td>
+                    <td><input type="hidden" name="PROPERTY[<?= $prop_code ?>][CODE]"
+                               value="<?= htmlspecialcharsEx($prop_code) ?>"/>
+                        <?
+                        if (strlen($value) <= 0):
+                            $value = $APPLICATION->GetDirProperty($prop_code, array($site, $path));
+                            ?>
+                            <div id="bx_view_property_<?= $prop_code ?>"
+                                 style="overflow:hidden;padding:2px 12px 2px 2px; border:1px solid #F8F9FC; width:90%; cursor:text; box-sizing:border-box; -moz-box-sizing:border-box;background-color:transparent; background-position:right; background-repeat:no-repeat; height: 22px;"
+                                 onclick="BXEditProperty('<?= $prop_code ?>')"
+                                 onmouseover="this.style.borderColor = '#434B50 #ADC0CF #ADC0CF #434B50';"
+                                 onmouseout="this.style.borderColor = '#F8F9FC'"
+                                 class="edit-field"><?= htmlspecialcharsEx($value) ?></div>
+
+                            <div id="bx_edit_property_<?= $prop_code ?>" style="display:none;"></div>
+                        <?
+                        else:
+                        ?>
+                        <input type="text" name="PROPERTY[<?= $prop_code ?>][VALUE]"
+                               value="<?= htmlspecialcharsEx($value) ?>" size="50"/></td>
+                    <?
+                    endif;
+                    ?>
+                </tr>
+            <?
+            endforeach;
+            ?>
+        </table><?php
+        $tabControl->BeginNextTab();
+        ?>
+        <table>
+            <?
+            $arEditProperties = array();
+            if ($prop_code = COption::GetOptionString('powernic.seo', 'property_canonical', 'canonical')) $arEditProperties['canonical'] = HtmlFilter::encode($prop_code);
             foreach ($arEditProperties as $key => $prop_code):
                 $value = $arGlobalProperties[$prop_code];
                 ?>

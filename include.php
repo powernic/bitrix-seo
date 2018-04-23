@@ -85,14 +85,24 @@ class CPowernicSeoEventHandlers
         ));
     }
 
+
     function SeoOnEpilog()
     {
         /* TODO: Формируем данные для вывода в шапке*/
         global $APPLICATION;
+        if (strpos($APPLICATION->GetCurDir(), "/bitrix/") !== false) return;
+
+        $urlSite = @($_SERVER["HTTPS"] != 'on') ? 'http://' . $_SERVER["SERVER_NAME"] : 'https://' . $_SERVER["SERVER_NAME"];
+        $urlSite .= ($_SERVER["SERVER_PORT"] != 80) ? ":" . $_SERVER["SERVER_PORT"] : "";
+
+        $APPLICATION->AddHeadString('<base href="' . $urlSite . '">');
+        if (empty($APPLICATION->GetPageProperty("canonical"))) {
+            $APPLICATION->AddHeadString('<link rel="canonical" href="' . $APPLICATION->GetCurPage() . '"/>');
+        }
         $properties = array('twitter:title', 'twitter:description',
             'og:url', 'og:description',
             'og:title', 'twitter:card',
-            'site_name', 'og:locale');
+            'og:site_name', 'og:locale');
         $paramList = Seo\SeoManager::getParamsList();
         $params = array_keys($paramList);
         if (!empty($APPLICATION->GetPageProperty('og:image'))) {
@@ -117,20 +127,31 @@ class CPowernicSeoEventHandlers
                 } elseif (in_array($property, array('og:description', 'twitter:description'))) {
                     $value = $APPLICATION->GetPageProperty('description');
                 } elseif ($property == 'og:url') {
-                    $value = $APPLICATION->GetCurPage();
+                    $value = $urlSite . $_SERVER["REQUEST_URI"];
                 }
             }
             $metaType = 'name';
-            if(stripos($property,'og') !== false){
+            if (stripos($property, 'og') !== false) {
                 $metaType = 'property';
             }
-            $APPLICATION->AddHeadString('<meta '.$metaType.'="' . $property . '" content="' . $value . '">');
+            $APPLICATION->AddHeadString('<meta ' . $metaType . '="' . $property . '" content="' . $value . '">');
         }
+         $paramList = array_intersect_key ($paramList, array('og:locale' => '',
+            'og:type' => '',
+            'og:site_name' => '',
+            'og:image' => '',
+            'twitter:card' => ''));
         foreach ($paramList as $property => $value) {
             if (!empty($value)) {
                 $APPLICATION->AddHeadString('<meta name="' . $property . '" content="' . $value . '">');
             }
         }
+    }
+
+    function SeoOnEndBufferContent(&$content)
+    {
+        $paramList = Seo\SeoManager::getParamsList();
+        $content = str_replace("</body>", $paramList['business'].$paramList['metrica']."</body>", $content);
     }
 }
 
