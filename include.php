@@ -134,6 +134,7 @@ class CPowernicSeoEventHandlers
             if (stripos($property, 'og') !== false) {
                 $metaType = 'property';
             }
+            $value = str_replace("\\r\\n","\r\n",$value);
             $APPLICATION->AddHeadString('<meta ' . $metaType . '="' . $property . '" content="' . $value . '">');
         }
          $paramList = array_intersect_key ($paramList, array('og:locale' => '',
